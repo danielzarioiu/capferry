@@ -50,7 +50,9 @@ impl ConfigStore {
         fs::create_dir_all(parent)
             .with_context(|| format!("failed to create config dir {}", parent.display()))?;
 
-        let serialized = toml::to_string_pretty(config).context("failed to serialize config")?;
+        let mut serialized =
+            toml::to_string_pretty(config).context("failed to serialize config")?;
+        serialized = add_zai_auth_token_comment(serialized);
         fs::write(&self.path, serialized)
             .with_context(|| format!("failed to write config file at {}", self.path.display()))
     }
@@ -80,4 +82,10 @@ fn capferry_home_dir() -> Result<PathBuf> {
     }
 
     Ok(home.join(".capferry"))
+}
+
+fn add_zai_auth_token_comment(serialized: String) -> String {
+    let marker = "\nauth_token = ";
+    let comment = "\n# NOTE: temporary plain-text storage. This token will move to keychain in a future release.\n";
+    serialized.replacen(marker, &format!("{comment}auth_token = "), 1)
 }

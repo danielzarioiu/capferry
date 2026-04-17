@@ -17,5 +17,18 @@ pub struct Cli {
 pub enum Commands {
     Status,
     Install,
-    Use { provider: Provider },
+    Use {
+        provider: Provider,
+    },
+    Configure {
+        #[command(subcommand)]
+        target: ConfigureTarget,
+    },
+    Doctor,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ConfigureTarget {
+    Bedrock,
+    Zai,
 }

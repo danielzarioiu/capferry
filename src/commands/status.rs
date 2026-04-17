@@ -23,23 +23,58 @@ fn print_status(store: &ConfigStore, cfg: &CapferryConfig) {
         cfg.active_provider.wrapper_name()
     );
     println!("  bedrock:");
-    println!("    region: {}", render_opt(cfg.bedrock.region.as_deref()));
     println!(
-        "    profile: {}",
-        render_opt(cfg.bedrock.profile.as_deref())
+        "    aws_profile: {}",
+        render_opt_with_fallback(
+            cfg.bedrock.aws_profile.as_deref(),
+            "<inherit AWS default profile>"
+        )
     );
     println!(
-        "    model_id: {}",
-        render_opt(cfg.bedrock.model_id.as_deref())
+        "    aws_region: {}",
+        render_opt_with_fallback(
+            cfg.bedrock.aws_region.as_deref(),
+            "<inherit AWS default region>"
+        )
+    );
+    println!(
+        "    sonnet_model: {}",
+        render_opt(cfg.bedrock.sonnet_model.as_deref())
+    );
+    println!(
+        "    opus_model: {}",
+        render_opt(cfg.bedrock.opus_model.as_deref())
+    );
+    println!(
+        "    haiku_model: {}",
+        render_opt(cfg.bedrock.haiku_model.as_deref())
     );
     println!("  zai:");
-    println!("    api_key: {}", mask_secret(cfg.zai.api_key.as_deref()));
     println!("    base_url: {}", render_opt(cfg.zai.base_url.as_deref()));
-    println!("    model: {}", render_opt(cfg.zai.model.as_deref()));
+    println!(
+        "    auth_token: {}",
+        mask_secret(cfg.zai.auth_token.as_deref())
+    );
+    println!(
+        "    sonnet_model: {}",
+        render_opt(cfg.zai.sonnet_model.as_deref())
+    );
+    println!(
+        "    opus_model: {}",
+        render_opt(cfg.zai.opus_model.as_deref())
+    );
+    println!(
+        "    haiku_model: {}",
+        render_opt(cfg.zai.haiku_model.as_deref())
+    );
 }
 
 fn render_opt(value: Option<&str>) -> &str {
     value.unwrap_or("<not set>")
+}
+
+fn render_opt_with_fallback<'a>(value: Option<&'a str>, fallback: &'a str) -> &'a str {
+    value.unwrap_or(fallback)
 }
 
 fn mask_secret(value: Option<&str>) -> String {

@@ -27,14 +27,56 @@ impl CapferryConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct BedrockConfig {
-    pub region: Option<String>,
-    pub profile: Option<String>,
-    pub model_id: Option<String>,
+    pub aws_profile: Option<String>,
+    pub aws_region: Option<String>,
+    pub sonnet_model: Option<String>,
+    pub opus_model: Option<String>,
+    pub haiku_model: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ZaiConfig {
-    pub api_key: Option<String>,
     pub base_url: Option<String>,
-    pub model: Option<String>,
+    pub auth_token: Option<String>,
+    pub sonnet_model: Option<String>,
+    pub opus_model: Option<String>,
+    pub haiku_model: Option<String>,
+}
+
+impl CapferryConfig {
+    pub fn active_provider_errors(&self) -> Vec<String> {
+        match self.active_provider {
+            Provider::Subscription => Vec::new(),
+            Provider::Bedrock => validate_bedrock(&self.bedrock),
+            Provider::Zai => validate_zai(&self.zai),
+        }
+    }
+}
+
+pub fn validate_bedrock(cfg: &BedrockConfig) -> Vec<String> {
+    let _ = cfg;
+    Vec::new()
+}
+
+pub fn validate_zai(cfg: &ZaiConfig) -> Vec<String> {
+    let mut errors = Vec::new();
+    ensure_required(&mut errors, "zai.base_url", cfg.base_url.as_deref());
+    ensure_required(&mut errors, "zai.auth_token", cfg.auth_token.as_deref());
+    ensure_required(&mut errors, "zai.sonnet_model", cfg.sonnet_model.as_deref());
+    ensure_required(&mut errors, "zai.opus_model", cfg.opus_model.as_deref());
+    ensure_required(&mut errors, "zai.haiku_model", cfg.haiku_model.as_deref());
+
+    if let Some(base_url) = cfg.base_url.as_deref()
+        && !(base_url.starts_with("https://") || base_url.starts_with("http://"))
+    {
+        errors.push("zai.base_url must start with http:// or https://".to_owned());
+    }
+
+    errors
+}
+
+fn ensure_required(errors: &mut Vec<String>, name: &str, value: Option<&str>) {
+    if value.map(str::trim).is_none_or(str::is_empty) {
+        errors.push(format!("{name} is required"));
+    }
 }
