@@ -1,80 +1,96 @@
 # capferry
 
-`capferry` is an early-stage Rust project, intended as a solid foundation for building a reliable and secure CLI tool.
+`capferry` manages provider-specific Claude wrapper commands (`claude-sub`, `claude-bedrock`, `claude-zai`) and keeps a `claude-current` alias synced to your selected provider.
 
-## Project Status
+## Installation Guide
 
-The repository is currently a minimal Rust scaffold:
+### 1. Prerequisites
 
-- crate initialized with `cargo`
-- entrypoint in `src/main.rs`
-- no external dependencies yet
+- macOS or Linux
+- Rust toolchain (`rustup`, `cargo`)
+- Claude CLI installed and reachable from terminal
 
-## Requirements
-
-- Rust toolchain (recommended via `rustup`)
-- Cargo (included with Rust)
-
-Verify installation:
+Check:
 
 ```bash
 rustc --version
 cargo --version
+claude --version
 ```
 
-## Quick Start
+### 2. Install `capferry`
 
-1. Clone the repository:
+From this repository:
 
 ```bash
-git clone <repo-url>
-cd capferry
+cargo install --path .
 ```
 
-2. Run in development:
+This installs the `capferry` binary in `~/.cargo/bin`.
+
+Alternative (dev run without install):
 
 ```bash
-cargo run
+cargo run -- --help
 ```
 
-3. Build release binary:
+### 3. Ensure PATH is configured
+
+Your shell must include:
+
+- `~/.cargo/bin` (for `capferry`)
+- `~/.local/bin` (for generated wrapper scripts)
+
+For `zsh`, add to `~/.zshrc`:
+
+```bash
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Then reload:
+
+```bash
+source ~/.zshrc
+```
+
+### 4. First-time setup
+
+Run:
+
+```bash
+capferry configure
+```
+
+Then verify:
+
+```bash
+capferry doctor
+capferry status
+```
+
+## Basic Usage
+
+- `capferry status` - show active config
+- `capferry install` - install wrapper scripts
+- `capferry use bedrock|zai|sub` - switch provider and refresh `claude-current`
+- `capferry configure` - interactive config update + reinstall wrappers
+- `capferry doctor` - run environment and config checks
+
+## Troubleshooting
+
+- `capferry: command not found`
+  - Ensure `~/.cargo/bin` is in PATH, then restart shell.
+- Wrapper commands not found (`claude-sub`, etc.)
+  - Ensure `~/.local/bin` is in PATH.
+  - Run `capferry install`.
+- Claude binary check fails
+  - Confirm `claude` is installed and runnable.
+  - Update `claude_path` in `~/.capferry/config.toml` if needed.
+
+## Build and Test
 
 ```bash
 cargo build --release
-```
-
-4. Run tests:
-
-```bash
 cargo test
 ```
-
-## Project Structure
-
-```text
-capferry/
-├── Cargo.toml
-├── Cargo.lock
-└── src/
-    └── main.rs
-```
-
-## Roadmap (Draft)
-
-- Define the functional scope of `capferry`
-- Implement CLI argument parsing (e.g. `clap`)
-- Add structured error handling
-- Introduce unit and integration tests
-- Configure linting and formatting (`clippy`, `rustfmt`)
-
-## Contributing
-
-Contributions are welcome. To contribute:
-
-1. Open an issue to discuss the proposal
-2. Create a dedicated branch
-3. Submit a pull request with a clear change description
-
-## License
-
-To be defined.
